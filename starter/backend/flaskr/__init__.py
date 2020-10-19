@@ -137,9 +137,10 @@ def create_app(test_config=None):
   of the questions list in the "List" tab.  
   '''
   @app.route('/questions', methods=['POST'])
-  def create_question():
+  def add_question():
     body = request.get_json()
-
+    if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
+      abort(422)
     new_question = body.get('question', None)
     new_answer = body.get('answer', None)
     new_category = body.get('category', None)
@@ -154,7 +155,7 @@ def create_app(test_config=None):
 
       return jsonify({
         'success': True,
-        'created': Question.id,
+        'created': question.id,
         'questions': current_questions,
         'total_questions': len(Question.query.all())
       })
@@ -188,7 +189,7 @@ def create_app(test_config=None):
           "difficulty": question.difficulty, 
           "id": question.id 
         })
-      print(questions)
+
       return jsonify({
           'success': True,
           'questions': questions_list,
@@ -208,7 +209,6 @@ def create_app(test_config=None):
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def retrive_question_in_category(category_id):
     selection = Question.query.filter(Question.category == category_id)
-    print (selection)
     current_questions = paginate_questions(request, selection)
 
     if len(current_questions) == 0:
@@ -302,4 +302,4 @@ def create_app(test_config=None):
       }), 400
   
   return app
-  return app
+
