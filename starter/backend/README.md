@@ -66,29 +66,162 @@ One note before you delve into your tasks: for each endpoint you are expected to
 8. Create a POST endpoint to get questions to play the quiz. This endpoint should take category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions. 
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
-REVIEW_COMMENT
-```
-This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 
 
-Endpoints
-GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET `/categories`
 
-GET '/categories'
+curl -X GET http://127.0.0.1:5000/categories
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs.
+```
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "success": true, 
+  "total_categories": 6
+}
+```
+
+
+
+GET `\questions` 
+
+curl -X GET http://127.0.0.1:5000/questions 
+- Get a paginated dictionary of questions of all categories
+- *Request Arguments (optional):* page:int if we no give page value the defult value is 0
+- *Returns:*  
+``` 
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    },...
+    ...
+    ...
 
 ```
 
+DELETE `/questions/<id>`
+
+curl -X DELETE http://127.0.0.1:5000/questions/71
+- Delete the question in database if its id match with given id
+- *Request Arguments:* int:id 
+- *Returns:* 
+```
+{
+  "deleted": 71, 
+  "success": true, 
+  "total_questions": 41
+}
+```
+
+POST `/questions`
+
+curl -X POST -H "Content-Type: application/json" -d '{"question": "what is the best country", "answer": "Saudi Arabia", "difficulty": 1, "category": 1}' http://127.0.0.1:5000/questions
+- Add a new question in database 
+- *Request body:* {question:string, answer:string, difficulty:int, category:string}
+- *Returns:* 
+```
+{
+  "created": 71, 
+  "success": true, 
+  "total_questions": 42
+}
+```
+POST `/questions/search`
+
+curl -X POST -H "Content-Type: application/json" -d'{"search_term":"tournament"}' http://127.0.0.1:5000/questions/search
+- Get all questions where given substring matches with the search_term 
+- *Request body:* jasonbody{'search_term':'string'}
+- *Returns:*
+```
+{
+  "questions": [
+    {
+      "answer": "Brazil", 
+      "category": 6, 
+      "difficulty": 3, 
+      "id": 10, 
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 1
+}
+```
+
+GET `/categories/<int:category_id>/questions`
+
+curl -X GET http://127.0.0.1:5000/categories/6/questions
+- Get question with a given category
+- *Request argument:* category_id:int
+- *Returns:*
+```
+{
+  "questions": [
+    {
+      "answer": "Brazil", 
+      "category": 6, 
+      "difficulty": 3, 
+      "id": 10, 
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 1
+}
+```
+POST `/play`
+
+curl -X POST -H "Content-Type: application/json" -d '{"previous_questions":[],"quiz_category":{"type":"Science","id":"1"}}' http://127.0.0.1:5000/play
+- Get random question within a given category.  
+- *Request body:* {previous_questions: arr, quiz_category: {id:int, type:string}}
+- *Returns*: 
+```
+{
+  "question": {
+    "answer": "Saudi Arabia", 
+    "category": 1, 
+    "difficulty": 1, 
+    "id": 33, 
+    "question": "what is the best country"
+  }, 
+  "success": true
+}
+```
+
+## Error Handling
+Error returning a json object in the following format:
+```
+{
+  "error": 404, 
+  "message": "resource not found", 
+  "success": false
+}
+
+The APi will return different type of errors, if request failed:
+400:bad request
+404:resource not found
+422:unprocessable
+```
 
 ## Testing
 To run the tests, run

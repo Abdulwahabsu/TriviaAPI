@@ -20,10 +20,12 @@ def create_app(test_config=None):
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
+  Access-Control-Allow-Credentials
   '''
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
@@ -42,7 +44,6 @@ def create_app(test_config=None):
         "difficulty": question.difficulty, 
         "id": question.id 
       })
-    current_questions = questions[start:end]
     current_questions = questions[start:end]
 
     return current_questions
@@ -85,6 +86,7 @@ def create_app(test_config=None):
   def retrieve_questions():
     selection = Question.query.order_by(Question.id).all()
     current_questions = paginate_questions(request, selection)
+    categories = Category.query.order_by(Category.id).all()
 
     if len(current_questions) == 0:
       abort(404)
@@ -92,7 +94,8 @@ def create_app(test_config=None):
     return jsonify({
       'success': True,
       'questions': current_questions,
-      'total_questions': len(Question.query.all())
+      'total_questions': len(selection),
+      'categories': {category.id: category.type for category in categories},
     })
 
   '''
@@ -227,41 +230,29 @@ def create_app(test_config=None):
   '''
   @app.route('/play', methods=['POST'])
   def play():
-    body = request.get_json()
-    if  ('play_category' not in body):
-      abort(422)
-    
-    prev_questions = body.get('previous_questions', [])
-    play_category = body.get('play_category', None)
-
-    if play_category==None:
-      abort(422)
-    
     try:
-      questions = Question.query.filter_by(category=play_category).all()
-      if not questions:
-        return abort(422)
-      
-      questions_list = []
-      for question in questions:
-        if question.id not in prev_questions:
-          questions_list.append({
-          "question": question.question,
-          "answer": question.answer, 
-          "category": question.category, 
-          "difficulty": question.difficulty, 
-          "id": question.id 
-      })
+      body = request.get_json()
 
+      if not ('quiz_category' in body and 'previous_questions' in body):
+          abort(422)
 
-      if len(questions_list) != 0:
+      category = body.get('quiz_category')
+      previous_questions = body.get('previous_questions')
 
-        return jsonify({
+      if category['type'] == 'click':
+          available_questions = Question.query.filter(
+              Question.id.notin_((previous_questions))).all()
+      else:
+          available_questions = Question.query.filter_by(
+              category=category['id']).filter(Question.id.notin_((previous_questions))).all()
+
+      new_question = available_questions[random.randrange(
+          0, len(available_questions))].format() if len(available_questions) > 0 else None
+
+      return jsonify({
           'success': True,
-          'question': questions_list,
-          'total_questions': len(questions_list)
-        })
-
+          'question': new_question
+      })
     except:
       abort(422)
 

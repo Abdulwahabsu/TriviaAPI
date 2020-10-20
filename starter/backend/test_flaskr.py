@@ -131,7 +131,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'resource not found')
 
     def test_play(self):
-        play = {'previous_questions': [1, 2, 3],'quiz_category': '1'}
+        play = {"previous_questions":[],"quiz_category":{"type":"Science","id":"1"}}
         res = self.client().post('/play', json=play)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
