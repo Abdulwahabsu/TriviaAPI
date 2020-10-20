@@ -56,12 +56,9 @@ def create_app(test_config=None):
   @app.route('/categories')
   def retrieve_categories():
     categories = Category.query.order_by(Category.id).all()
-    categories_list = []
+    categories_list = {}
     for category in categories:
-      categories_list.append({
-        "category_id": category.id,
-        "category_type": category.type
-      })
+      categories_list[category.id] = category.type
 
     if len(categories_list) == 0:
       abort(404)
@@ -94,8 +91,8 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'books': current_questions,
-      'total_books': len(Question.query.all())
+      'questions': current_questions,
+      'total_questions': len(Question.query.all())
     })
 
   '''
@@ -115,13 +112,11 @@ def create_app(test_config=None):
 
       questions.delete()
       selection = Question.query.order_by(Question.id).all()
-      current_questions = paginate_questions(request, selection)
 
       return jsonify({
         'success': True,
         'deleted': question_id,
-        'books': current_questions,
-        'total_books': len(Question.query.all())
+        'total_questions': len(Question.query.all())
       })
 
     except:
@@ -151,12 +146,10 @@ def create_app(test_config=None):
       question.insert()
 
       selection = Question.query.order_by(Question.id).all()
-      current_questions = paginate_questions(request, selection)
 
       return jsonify({
         'success': True,
         'created': question.id,
-        'questions': current_questions,
         'total_questions': len(Question.query.all())
       })
 
@@ -216,8 +209,8 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'books': current_questions,
-      'total_books': len(current_questions)
+      'questions': current_questions,
+      'total_questions': len(current_questions)
     })
 
 
@@ -235,17 +228,17 @@ def create_app(test_config=None):
   @app.route('/play', methods=['POST'])
   def play():
     body = request.get_json()
-    if  ('quiz_category' not in body):
+    if  ('play_category' not in body):
       abort(422)
     
     prev_questions = body.get('previous_questions', [])
-    quiz_category = body.get('quiz_category', None)
+    play_category = body.get('play_category', None)
 
-    if quiz_category==None:
+    if play_category==None:
       abort(422)
     
     try:
-      questions = Question.query.filter_by(category=quiz_category).all()
+      questions = Question.query.filter_by(category=play_category).all()
       if not questions:
         return abort(422)
       
