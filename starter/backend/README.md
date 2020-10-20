@@ -94,7 +94,7 @@ GET `\questions`
 
 curl -X GET http://127.0.0.1:5000/questions 
 - Get a paginated dictionary of questions of all categories
-- *Request Arguments (optional):* page:int if we no give page value the defult value is 0
+- *Request Arguments (optional):* page:int (defult value is 1)
 - *Returns:*  
 ``` 
 {
