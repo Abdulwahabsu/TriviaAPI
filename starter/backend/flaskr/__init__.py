@@ -230,29 +230,32 @@ def create_app(test_config=None):
   '''
   @app.route('/play', methods=['POST'])
   def play():
+    body = request.get_json()
+
+    if ('quiz_category' not in body and 'previous_questions' not in body):
+        abort(422)
+
     try:
-      body = request.get_json()
-
-      if not ('quiz_category' in body and 'previous_questions' in body):
-          abort(422)
-
       category = body.get('quiz_category')
       previous_questions = body.get('previous_questions')
 
-      if category['type'] == 'click':
-          available_questions = Question.query.filter(
-              Question.id.notin_((previous_questions))).all()
+      category_id = category['id']
+
+      if category_id == 0:
+          next_questions = Question.query.filter(Question.id.notin_((previous_questions))).all()
       else:
-          available_questions = Question.query.filter_by(
-              category=category['id']).filter(Question.id.notin_((previous_questions))).all()
-
-      new_question = available_questions[random.randrange(
-          0, len(available_questions))].format() if len(available_questions) > 0 else None
-
+          next_questions = Question.query.filter_by(category=category_id).filter(Question.id.notin_((previous_questions))).all()
+      
+      if len(next_questions) <= 0:
+        question = None
+      else:
+        question = next_questions[random.randrange(0, len(next_questions))].format()
+      
       return jsonify({
-          'success': True,
-          'question': new_question
+        "success": True,
+        "question": question
       })
+      
     except:
       abort(422)
 
