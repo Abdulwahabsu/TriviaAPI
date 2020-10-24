@@ -1,4 +1,4 @@
-/frontend/node_modules*
+starter/frontend/node_modules*
 frontend/node_modules
 /frontend/node_modules/
 .idea*
