@@ -13,5 +13,5 @@ ehthumbs.db
 Thumbs.db
 
 ######################
-/frontend/node_modules
+starter/frontend/node_modules
 .idea*
